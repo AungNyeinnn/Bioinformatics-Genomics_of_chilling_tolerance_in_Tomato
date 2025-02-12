@@ -1,0 +1,107 @@
+---
+title: "QTL of chilling tolerance in Tomato"
+author: "Aung Nyein"
+format: docx
+editor: visual
+echo: false
+---
+
+Introduction
+
+Quantitative traits are measurable phenotypes that are results of many genes and variation from the environment. Their phenotypes continuous within a gradient ( such as height) in contrast to qualitative traits which phenotypes are defined by categories. Breeding for quantitative traits is accommodated by the use of QTLs to select for as many desirable loci as possible. QTL analysis is a way of identifying regions in genomes ( which can be marked with molecular markers) that are associated with the targeted traits. QTL mapping is done by analyzing statistical significance of allelic variation in relation to the variation from phenotypic data of a segregating population. The data for markers in a segregating population is linked to the data for phenotypes of target traits in a QTL mapping. In the segregating population, there are many combinations of polymorphic markers. Computer systems can analyze whether the presence of a certain maker also lead to a certain phenotype and the frequency of that linkage between marker and phenotype is compared with a LOD score for statistical significance. The information from QTLs and linkage mapping is very useful for breeders to select for their desirable alleles in a timely manner with low economic cost.
+
+The population used for QTL mapping in this study is a backcross 1 tomato population. Solanum lycopersicum cv,"T5" and S. habrochaites acc, LA1778​ are crossed to obtain F1. The progeny is then backcrossed with "T5" parents to obtain BC1 population. 196 individuals were in the population and 144 markers were genotyped. The trait for QTL mapping is chilling tolerance and the phenotypic data is from 1998 and 2003. The two data sets will be analyzed differently but as one phenotypic trait.
+
+### QTL for 1998 Data
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+#install necessary libraries
+library(qtl)
+
+#load the data
+load('mapthisTomLink2.RData')
+
+#run 1000 permutations for LOD threshold
+operm.TomLink1000 <- scanone(mapthisTomLink2, 
+                            n.perm=1000, 
+                            pheno.col = 1,
+                            verbose=FALSE)
+perm_summary <-summary(operm.TomLink1000)
+perm_summary
+```
+
+Column 1 of the pheno data corresponds to 1998 data. 1000 permutations were performed to determine LOD scores for this dataset. The LOD score for 5% significance level will be used as threshold for determining which QTL's are significant in the next part.
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+out.em.TomLink1998 <- scanone(mapthisTomLink2, pheno.col = 1, method="em")
+
+# Extract the LOD score for the 5% significance level
+threshold <- perm_summary[which.max(abs(perm_summary - 0.05))]
+
+# Set up the plotting area to have 3 rows and 4 columns
+par(mfrow=c(2,3))
+
+# Loop through the chromosomes and plot them
+for (i in 1:12) {
+  # Plot for each chromosome with specific title and chromosome number
+  plot(out.em.TomLink1998, ylab="LOD score", main=paste('Linkage Group', i), chr=as.character(i))
+  abline(h=threshold, col="red")
+}
+```
+
+From QTL analysis, chromosomes 1 and 4 have QTLs contributing to the trait of chilling tolerance from 1998 data at 5% significance level: the LOD scores cross the threshold (redline) set by 1000 permutations
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+summary(out.em.TomLink1998)
+
+```
+
+The above table shows markers with the highest LOD score on each chromosome(chr). The higher the LOD score, the more likely it is that the qtl is associated with the phenotype.
+
+### QTL for 2003 Data
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+#run 1000 permutations for LOD threshold
+operm.TomLink1000 <- scanone(mapthisTomLink2, 
+                            n.perm=1000, 
+                            pheno.col = 2,
+                            verbose=FALSE)
+perm_summary <-summary(operm.TomLink1000)
+perm_summary
+```
+
+Column 2 from pheno dataset corresponds to 2003 data.
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+out.em.TomLink2003 <- scanone(mapthisTomLink2, pheno.col = 2, method="em")
+
+# Set threshold value for the horizontal line
+threshold <- perm_summary[which.max(abs(perm_summary - 0.05))]
+
+# Set up the plotting area to have 3 rows and 4 columns
+par(mfrow=c(2,3))
+
+# Loop through the chromosomes and plot them
+for (i in 1:12) {
+  # Plot for each chromosome with specific title and chromosome number
+  plot(out.em.TomLink2003, ylab="LOD score", main=paste('Linkage Group', i), chr=as.character(i))
+  abline(h=threshold, col="red")
+}
+```
+
+For 2003 data, the QTLs on chromosomes 1 and 4 that were previously associated with the trait in 1998 data are still significant. There is an additional QTL on chromosome 11 that is also significantly associated with the trait.
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE, error = FALSE}
+summary(out.em.TomLink2003)
+
+```
+
+In summary, 2 QTLs from 1998 data and 3 from 2003 data were identified to be significantly associated with chilling tolerance in Tomato.
+
+Reference:
+
+Collard, B.C.Y., Jahufer, M.Z.Z., Brouwer, J.B, Pang, E.C.K (2005). An introduction to markers, quantitative trait loci(QTL) mapping and marker assisted selection for crop improvement: The basic concepts. Euphytica (142) 169-196 ​DOI: 10.1007/s10681-005-1681-5
+
+Dai, Z., Lin, Z. (2017) Identification and characterization of segregation distortion loci on Cotton Chromosome 18. Frontiers in Plant Science. ​https://doi.org/10.3389/fpls.2016.02037
+
+Hackett, C., (2002). Statistical methods for QTL mapping in cereals. Plant Mol Biol 48: 585-599
